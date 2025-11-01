@@ -1,4 +1,4 @@
-.PHONY: test flakes tags clean install sync build release official
+.PHONY: test flakes lint format tags clean install sync build release official
 
 all: test
 
@@ -12,7 +12,16 @@ test:
 	@uv run attest -rquickfix
 
 flakes:
-	@uv run pyflakes attest
+	@uv run ruff check attest
+
+lint:
+	@uv run ruff check attest
+
+format:
+	@uv run ruff format attest
+
+fix:
+	@uv run ruff check --fix attest
 
 tags:
 	@ctags -R attest

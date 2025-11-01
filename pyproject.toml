@@ -63,7 +63,7 @@ include = [
 # Development dependencies (optional)
 [project.optional-dependencies]
 dev = [
-    "pyflakes",
+    "ruff",
     "sphinx",
     "tox",
 ]
@@ -104,3 +104,34 @@ deps = [
 ]
 change_dir = "docs"
 commands = [["sphinx-build", "-Eab", "{envname}", "-d", "{envtmpdir}/doctrees", ".", "{envtmpdir}/{envname}"]]
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py311"
+line-length = 79
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "E722",  # bare except (used intentionally in context managers)
+    "UP009", # UTF-8 encoding declaration (legacy, but kept for compatibility)
+    "B018",  # useless expression (used in tests to trigger exceptions)
+    "B020",  # loop control variable overrides (intentional in module iteration)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403", "F405", "I001"]  # Allow star imports and unused imports
+"attest/ast.py" = ["F403", "F405"]  # Star imports from _ast module are intentional
+"attest/tests/*.py" = ["B018"]  # Allow useless expressions in test code
