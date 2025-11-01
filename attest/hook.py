@@ -1,9 +1,9 @@
 import importlib.machinery
 import importlib.util
 import inspect
-import os
 import sys
 import types
+from pathlib import Path
 
 from attest import ast, statistics
 from attest.codegen import SourceGenerator, to_source
@@ -317,32 +317,36 @@ class AssertImportHook:
 
         if spec.submodule_search_locations is not None:
             # It's a package
-            origin = spec.origin or spec.submodule_search_locations[0]
-            filename = os.path.join(origin, '__init__.py')
+            filename_path = None
             if spec.origin:
-                filename = spec.origin
+                filename_path = Path(spec.origin)
+            else:
+                first_location = next(iter(spec.submodule_search_locations), None)
+                if first_location is not None:
+                    filename_path = Path(first_location) / '__init__.py'
             newpath = spec.submodule_search_locations
-            try:
-                with open(filename) as f:
-                    code = f.read()
-            except (OSError, TypeError):  # Missing or invalid file paths
-                pass
+            if filename_path is not None:
+                filename = str(filename_path)
+                try:
+                    code = filename_path.read_text()
+                except (OSError, TypeError, ValueError):  # Missing or invalid file paths
+                    pass
         elif isinstance(spec.loader, importlib.machinery.SourceFileLoader):
             # It's a regular Python source file
-            filename = spec.origin
-            if filename:
+            if spec.origin:
+                filename_path = Path(spec.origin)
+                filename = str(filename_path)
                 try:
-                    with open(filename) as f:
-                        code = f.read()
+                    code = filename_path.read_text()
                 except OSError:  # Missing or unreadable files
                     pass
         elif isinstance(spec.loader, importlib.machinery.SourcelessFileLoader):
             # It's a compiled Python file (.pyc)
             if spec.origin and spec.origin.endswith('.pyc'):
-                filename = spec.origin[:-1]  # Remove 'c' from '.pyc'
+                filename_path = Path(spec.origin).with_suffix('.py')
+                filename = str(filename_path)
                 try:
-                    with open(filename) as f:
-                        code = f.read()
+                    code = filename_path.read_text()
                 except OSError:  # Missing source file
                     pass
 
