@@ -109,10 +109,9 @@ def warns():
     with attest.warns(UserWarning, DeprecationWarning, any=True):
         warnings.warn("foo")
 
-    if hasattr(warnings, "catch_warnings"):  # not available in Python 2.5
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", UserWarning)
-            with attest.warns(UserWarning):
-                warnings.warn("foo")
-            with attest.raises(UserWarning):
-                warnings.warn("bar")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", UserWarning)
+        with attest.warns(UserWarning):
+            warnings.warn("foo")
+        with attest.raises(UserWarning):
+            warnings.warn("bar")
