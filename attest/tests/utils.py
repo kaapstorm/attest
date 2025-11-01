@@ -47,8 +47,8 @@ def iter_mods():
             '''ast codegen collectors contexts deprecated hook __main__
                reporters run statistics utils pygments'''.split()]
     tests = ['attest.tests'] + ['attest.tests.' + mod for mod in
-            '''asserts classy collectors contexts hook _meta reporters utils
-               dummy dummy.foo'''.split()]
+            '''asserts classy collectors contexts hook import_hook _meta
+               reporters utils dummy dummy.foo'''.split()]
 
     found = list(utils.deep_iter_modules('attest'))
     expected = core + tests
