@@ -1,5 +1,3 @@
-from __future__ import with_statement
-
 import sys
 import os
 from os import path
@@ -87,7 +85,7 @@ def main(tests=None, **kwargs):
 
     if options.list_reporters:
         for reporter in get_all_reporters():
-            print reporter
+            print(reporter)
         return
 
     opts = parse_options(args)
@@ -116,7 +114,7 @@ def main(tests=None, **kwargs):
         filename = options.profile
         import cProfile
         cProfile.runctx('run()', globals(), locals(), filename)
-        print 'Wrote profiling results to %r.' % (filename,)
+        print('Wrote profiling results to %r.' % (filename,))
     else:
         run()
 

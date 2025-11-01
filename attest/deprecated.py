@@ -225,7 +225,7 @@ class Assert(object):
         """Test for greaterness or equality with ``>=``."""
         return assert_(self.obj >= obj, '%r < %r' % (self.obj, obj))
 
-    def __nonzero__(self):
+    def __bool__(self):
         """Test for truthiness in boolean context."""
         return bool(assert_(self.obj, 'not %r' % self.obj))
 
@@ -250,7 +250,7 @@ class Assert(object):
         proxy = Assert()
         try:
             yield proxy
-        except exceptions, error:
+        except exceptions as error:
             proxy.obj = error
         else:
             if len(exceptions) > 1:

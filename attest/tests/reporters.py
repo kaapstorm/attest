@@ -1,5 +1,3 @@
-from __future__ import with_statement
-
 import sys
 import inspect
 from traceback import format_exception_only
@@ -13,7 +11,7 @@ from . import _meta
 
 SOURCEFILE = inspect.getsourcefile(_meta)
 LINENO = 21
-EXCEPTION = format_exception_only(TestFailure, '')[0].rstrip()
+EXCEPTION = format_exception_only(TestFailure, TestFailure(''))[0].rstrip()
 
 
 suite = Tests()
@@ -32,7 +30,7 @@ def get_reporter_by_name():
                      plain=attest.PlainReporter,
                      xml=attest.XmlReporter,
                     )
-    for name, reporter in reporters.iteritems():
+    for name, reporter in reporters.items():
         assert attest.get_reporter_by_name(name) == reporter
 
 

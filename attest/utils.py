@@ -4,7 +4,6 @@ from array      import array
 from contextlib import contextmanager
 from inspect    import getmembers
 from pkgutil    import iter_modules
-from six        import reraise
 
 
 __all__ = ['get_terminal_size',
@@ -28,7 +27,7 @@ def get_terminal_size(default=(80, 24)):
     except ImportError:
         return default
     try:
-        ary = array('h', fcntl.fcntl(sys.stdin, termios.TIOCGWINSZ, chr(0) * 8))
+        ary = array('h', fcntl.fcntl(sys.stdin, termios.TIOCGWINSZ, b'\0' * 8))
         return ary[1], ary[0]
     except IOError:
         return default
@@ -154,7 +153,7 @@ def nested(constructors):
             except:
                 exc = sys.exc_info()
         if exc != (None, None, None):
-            reraise(*exc)
+            raise exc[1].with_traceback(exc[2])
 
 
 class counter(dict):

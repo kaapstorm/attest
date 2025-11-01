@@ -1,5 +1,4 @@
 # coding:utf-8
-from __future__ import absolute_import, with_statement
 
 import inspect
 import os
@@ -56,7 +55,7 @@ class TestResult(object):
     """
 
     def __init__(self, **kwargs):
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             setattr(self, key, value)
 
     full_tracebacks = False
@@ -129,8 +128,10 @@ class TestResult(object):
         clean = self.raw_traceback
         lines = ['Traceback (most recent call last):\n']
         lines += traceback.format_list(clean)
-        msg = str(self.error)
-        lines += traceback.format_exception_only(self.exc_info[0], msg)
+        lines += traceback.format_exception_only(
+            self.exc_info[0],
+            self.exc_info[1],
+        )
         return ''.join(lines)[:-1]
 
     @property
@@ -158,11 +159,11 @@ class TestResult(object):
                 if type(left) is type(right):
                     asserter = case._type_equality_funcs.get(type(left))
                     if asserter is not None:
-                        if isinstance(asserter, basestring):
+                        if isinstance(asserter, str):
                             asserter = getattr(case, asserter)
                         try:
                             asserter(left, right)
-                        except AssertionError, exc:
+                        except AssertionError as exc:
                             return '%s\n' % exc.args[0]
 
 
@@ -272,26 +273,26 @@ class PlainReporter(AbstractReporter):
         self.failures.append(result)
 
     def finished(self):
-        print
-        print
+        print()
+        print()
 
         width, _ = utils.get_terminal_size()
         for result in self.failures:
-            print result.test_name
+            print(result.test_name)
             if result.test.__doc__:
-                print inspect.getdoc(result.test)
-            print '-' * width
+                print(inspect.getdoc(result.test))
+            print('-' * width)
             if result.stdout:
-                print '->', '\n'.join(result.stdout)
+                print('->', '\n'.join(result.stdout))
             if result.stderr:
-                print 'E:', '\n'.join(result.stderr)
-            print result.traceback
-            print
+                print('E:', '\n'.join(result.stderr))
+            print(result.traceback)
+            print()
             result.debug()
 
-        print 'Failures: %s/%s (%s assertions)' % (len(self.failures),
+        print('Failures: %s/%s (%s assertions)' % (len(self.failures),
                                                    self.total,
-                                                   statistics.assertions)
+                                                   statistics.assertions))
 
         if self.failures:
             raise SystemExit(1)
@@ -369,7 +370,7 @@ class FancyReporter(AbstractReporter):
                 formatter = TerminalFormatter(bg=self.style)
                 if self.colorscheme is not None:
                     from pygments.token import string_to_tokentype
-                    for token, value in self.colorscheme.iteritems():
+                    for token, value in self.colorscheme.items():
                         token = string_to_tokentype(token.capitalize())
                         formatter.colorscheme[token] = (value, value)
             else:
@@ -386,26 +387,26 @@ class FancyReporter(AbstractReporter):
 
         if self.counter:
             self.progress.finish()
-        print
+        print()
 
         width, _ = utils.get_terminal_size()
         def show(result):
-            print colorize('bold', result.test_name)
+            print(colorize('bold', result.test_name))
             if result.test.__doc__:
-                print inspect.getdoc(result.test)
-            print colorize('faint', '─' * width)
+                print(inspect.getdoc(result.test))
+            print(colorize('faint', '─' * width))
             for line in result.stdout:
-                print colorize('bold', '→'),
-                print line
+                print(colorize('bold', '→'), end=' ')
+                print(line)
             for line in result.stderr:
-                print colorize('red', '→'),
-                print line
+                print(colorize('red', '→'), end=' ')
+                print(line)
 
         if self.verbose:
             for result in self.passes:
                 if result.stdout or result.stderr:
                     show(result)
-                    print
+                    print()
 
         for result in self.failures:
             show(result)
@@ -414,21 +415,21 @@ class FancyReporter(AbstractReporter):
             # literal unicode strings) but I guess this depends on the source
             # file encoding. Tell Pygments to guess: try UTF-8 and then latin1.
             # Without an `encoding` argument, Pygments just uses latin1.
-            print highlight(result.traceback,
+            print(highlight(result.traceback,
                             PythonTracebackLexer(encoding='guess'),
-                            formatter)
+                            formatter))
 
             assertion = result.assertion
             if assertion is not None:
-                print highlight(assertion,
+                print(highlight(assertion,
                                 PythonLexer(encoding='guess'),
-                                formatter)
+                                formatter))
 
             equality_diff = result.equality_diff
             if equality_diff is not None:
-                print highlight(equality_diff,
+                print(highlight(equality_diff,
                                 DiffLexer(encoding='guess'),
-                                formatter)
+                                formatter))
 
             result.debug()
 
@@ -436,8 +437,8 @@ class FancyReporter(AbstractReporter):
             failed = colorize('red', str(len(self.failures)))
         else:
             failed = len(self.failures)
-        print 'Failures: %s/%s (%s assertions, %.3f seconds)' % (
-            failed, self.counter, statistics.assertions, self.total_time)
+        print('Failures: %s/%s (%s assertions, %.3f seconds)' % (
+            failed, self.counter, statistics.assertions, self.total_time))
 
         if self.failures:
             raise SystemExit(1)
@@ -477,30 +478,30 @@ class XmlReporter(AbstractReporter):
     """
 
     def __init__(self):
-        self.escape = __import__('cgi').escape
+        self.escape = __import__('html').escape
 
     def begin(self, tests):
-        print '<?xml version="1.0" encoding="UTF-8"?>'
-        print '<testreport tests="%d">' % len(tests)
+        print('<?xml version="1.0" encoding="UTF-8"?>')
+        print('<testreport tests="%d">' % len(tests))
 
     def success(self, result):
-        print '  <pass name="%s"/>' % result.test_name
+        print('  <pass name="%s"/>' % result.test_name)
 
     def failure(self, result):
         if isinstance(result.error, AssertionError):
             tag = 'fail'
         else:
             tag = 'error'
-        print '  <%s name="%s" type="%s">' % (tag, result.test_name,
-                                              result.exc_info[0].__name__)
-        print self.escape('\n'.join(' ' * 4 + line
+        print('  <%s name="%s" type="%s">' % (tag, result.test_name,
+                                              result.exc_info[0].__name__))
+        print(self.escape('\n'.join(' ' * 4 + line
                                     for line in
                                     result.traceback.splitlines()),
-                          quote=True)
-        print '  </%s>' % tag
+                          quote=True))
+        print('  </%s>' % tag)
 
     def finished(self):
-        print '</testreport>'
+        print('</testreport>')
 
 
 class XUnitReporter(AbstractReporter):
@@ -509,7 +510,7 @@ class XUnitReporter(AbstractReporter):
 
     def __init__(self, file=None):
         self.file = file
-        self.escape = __import__('cgi').escape
+        self.escape = __import__('html').escape
         self.reports = []
         self.errors = 0
         self.failures = 0
@@ -532,7 +533,7 @@ class XUnitReporter(AbstractReporter):
             '<testcase classname="%s" name="%s" time="%f" />' % (
                 result.test_name, result.test.__name__, result.time))
         if self.file:
-            print result.test_name, "... ok"
+            print(result.test_name, "... ok")
 
     def failure(self, result):
         self.total_time += result.time
@@ -558,7 +559,7 @@ class XUnitReporter(AbstractReporter):
         error += '\n]]>\n</%s>\n</testcase>' % tag
         self.reports.append(error)
         if self.file:
-            print result.test_name, "... ", tag
+            print(result.test_name, "... ", tag)
 
     def finished(self):
         out = '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -576,7 +577,7 @@ class XUnitReporter(AbstractReporter):
         out += '\n</testsuite>\n'
 
         if not self.file:
-            print out
+            print(out)
         else:
             with open(self.file, "w") as f:
                 f.write(out)
@@ -619,7 +620,7 @@ class QuickFixReporter(AbstractReporter):
         type, msg = result.exc_info[0].__name__, str(result.exc_info[1])
         if msg:
             msg = ': ' + msg
-        print "%s:%s: %s%s" % (fn, lineno, type, msg)
+        print("%s:%s: %s%s" % (fn, lineno, type, msg))
 
     def finished(self):
         if self.failed:

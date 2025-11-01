@@ -1,4 +1,3 @@
-from __future__ import with_statement
 import inspect
 from contextlib import contextmanager
 from attest import Tests, assert_hook, utils, disable_imports, raises
@@ -198,6 +197,6 @@ def nested():
         with utils.nested([]):
             assert 1 == 0, "message"
 
-    except AssertionError, e:
-        print e.args
+    except AssertionError as e:
+        print(e.args)
         assert e.args == ("message", )

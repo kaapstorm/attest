@@ -27,7 +27,7 @@ Suppose we came up with an API like this:
 .. testsetup::
 
     import json
-    import urllib2
+    import urllib.request
 
     class Package(object):
 
@@ -113,7 +113,7 @@ Still fails:
 It's time to write some real code! Here's our working module::
 
     import json
-    import urllib2
+    import urllib.request
 
     class Package(object):
 

@@ -1,5 +1,3 @@
-from __future__ import with_statement
-
 import imp
 import inspect
 import os
@@ -68,7 +66,7 @@ class ExpressionEvaluator(SourceGenerator):
     def __str__(self):
         return '\n'.join((self.expr, repr(self)))
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(eval(self.expr, self.globals, self.locals))
 
     def eval(self, node):
@@ -135,10 +133,10 @@ def assert_hook(expr, msg='', globals=None, locals=None):
         raise TestFailure(value, msg)
 
 
-# Build AST nodes on 2.5 more easily
+# Build AST nodes more easily
 def _build(node, **kwargs):
     node = node()
-    for key, value in kwargs.iteritems():
+    for key, value in kwargs.items():
         setattr(node, key, value)
     return node
 
@@ -193,7 +191,7 @@ class AssertTransformer(ast.NodeTransformer):
         if newpath:
             module.__path__ = newpath
         sys.modules[name] = module
-        exec self.code in vars(module)
+        exec(self.code, vars(module))
         return module
 
     @property
@@ -212,19 +210,19 @@ class AssertTransformer(ast.NodeTransformer):
         return compile(to_source(self.node), self.filename, 'exec')
 
     def visit_Assert(self, node):
-        args = [_build(ast.Str, s=to_source(node.test)),
-                node.msg if node.msg is not None else _build(ast.Str, s=''),
+        args = [_build(ast.Constant, value=to_source(node.test)),
+                node.msg if node.msg is not None else _build(ast.Constant, value=''),
                 _build(ast.Call,
                     func=_build(ast.Name, id='globals', ctx=ast.Load()),
-                    args=[], keywords=[], starargs=None, kwargs=None),
+                    args=[], keywords=[]),
                 _build(ast.Call,
                     func=_build(ast.Name, id='locals', ctx=ast.Load()),
-                    args=[], keywords=[], starargs=None, kwargs=None)
+                    args=[], keywords=[])
                ]
         return ast.copy_location(
             _build(ast.Expr, value=_build(ast.Call,
                    func=_build(ast.Name, id='assert_hook', ctx=ast.Load()),
-                   args=args, keywords=[], starargs=None, kwargs=None)), node)
+                   args=args, keywords=[])), node)
 
 
 class AssertImportHookEnabledDescriptor(object):
@@ -291,7 +289,7 @@ class AssertImportHook(object):
 
         try:
             return transformer.make_module(name, newpath)
-        except Exception, err:
+        except Exception as err:
             raise ImportError('cannot import %s: %s' % (name, err))
 
     def get_source(self, name):
@@ -307,12 +305,12 @@ class AssertImportHook(object):
                 code = fd.read()
         elif info[2] == imp.PY_COMPILED:
             filename = fn[:-1]
-            with open(filename, 'U') as f:
+            with open(filename, 'r') as f:
                 code = f.read()
         elif info[2] == imp.PKG_DIRECTORY:
             filename = os.path.join(fn, '__init__.py')
             newpath = [fn]
-            with open(filename, 'U') as f:
+            with open(filename, 'r') as f:
                 code = f.read()
 
         return code, filename, newpath

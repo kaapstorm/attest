@@ -237,23 +237,6 @@ class SourceGenerator(NodeVisitor):
         self.newline(node)
         self.write('pass')
 
-    def visit_Print(self, node):
-        # XXX: python 2.6 only
-        self.newline(node)
-        self.write('print ')
-        want_comma = False
-        if node.dest is not None:
-            self.write(' >> ')
-            self.visit(node.dest)
-            want_comma = True
-        for value in node.values:
-            if want_comma:
-                self.write(', ')
-            self.visit(value)
-            want_comma = True
-        if not node.nl:
-            self.write(',')
-
     def visit_Delete(self, node):
         self.newline(node)
         self.write('del ')
@@ -341,11 +324,11 @@ class SourceGenerator(NodeVisitor):
             write_comma()
             self.write(keyword.arg + '=')
             self.visit(keyword.value)
-        if node.starargs is not None:
+        if hasattr(node, 'starargs') and node.starargs is not None:
             write_comma()
             self.write('*')
             self.visit(node.starargs)
-        if node.kwargs is not None:
+        if hasattr(node, 'kwargs') and node.kwargs is not None:
             write_comma()
             self.write('**')
             self.visit(node.kwargs)
@@ -354,14 +337,8 @@ class SourceGenerator(NodeVisitor):
     def visit_Name(self, node):
         self.write(node.id)
 
-    def visit_Str(self, node):
-        self.write(repr(node.s))
-
-    def visit_Bytes(self, node):
-        self.write(repr(node.s))
-
-    def visit_Num(self, node):
-        self.write(repr(node.n))
+    def visit_Constant(self, node):
+        self.write(repr(node.value))
 
     def visit_Tuple(self, node):
         self.write('(')
@@ -549,4 +526,4 @@ class SourceGenerator(NodeVisitor):
 
 if __name__ == '__main__':
     import sys
-    print to_source(parse(open(sys.argv[1]).read()))
+    print(to_source(parse(open(sys.argv[1]).read())))
