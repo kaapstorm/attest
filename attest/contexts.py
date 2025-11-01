@@ -77,7 +77,7 @@ def disable_imports(*names):
         builtins.__import__ = import_
 
 
-class Error(object):
+class Error:
     """Container of metadata for an exception caught by :func:`raises`.
 
     Attribute access and string adaption is forwarded to the exception

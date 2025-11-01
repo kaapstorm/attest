@@ -11,7 +11,7 @@ __all__ = ['Loader',
           ]
 
 
-class Loader(object):
+class Loader:
     """Run tests with Attest via distribute.
 
     .. deprecated:: 0.5
@@ -41,7 +41,7 @@ def assert_(expr, msg=None):
     return expr
 
 
-class Assert(object):
+class Assert:
     """Wrap an object such that boolean operations on it fails with an
     :exc:`AssertionError` if the operation results in :const:`False`,
     with more helpful error messages on failure than `assert`.

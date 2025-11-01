@@ -39,7 +39,7 @@ def auto_reporter():
     # Inside tests, sys.stdout is not a tty
     assert isinstance(attest.auto_reporter(), attest.PlainReporter)
 
-    class FakeTTY(object):
+    class FakeTTY:
 
         def isatty(self):
             return True

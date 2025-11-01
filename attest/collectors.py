@@ -20,7 +20,7 @@ __all__ = ['Tests',
           ]
 
 
-class Tests(object):
+class Tests:
     """Collection of test functions.
 
     :param tests:
@@ -386,7 +386,7 @@ def test(meth):
     return wrapper
 
 
-class TestBase(object):
+class TestBase:
     """Base for test classes. Decorate test methods with :func:`test`. Needs
     to be registered with a :class:`Tests` collection to be run. For setup
     and teardown, override :meth:`__context__` like a

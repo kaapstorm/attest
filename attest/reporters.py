@@ -45,7 +45,7 @@ __all__ = ['TestResult',
           ]
 
 
-class TestResult(object):
+class TestResult:
     """Container for result data from running a test.
 
     .. versionadded:: 0.4
@@ -166,7 +166,7 @@ class TestResult(object):
 
 
 def _test_loader_factory(reporter):
-    class Loader(object):
+    class Loader:
         def loadTestsFromNames(self, names, module=None):
             from .collectors import Tests
             Tests(names).run(reporter)
@@ -174,7 +174,7 @@ def _test_loader_factory(reporter):
     return Loader()
 
 
-class AbstractReporter(object):
+class AbstractReporter:
     """Optional base for reporters, serves as documentation and improves
     errors for incomplete reporters.
 

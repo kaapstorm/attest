@@ -29,7 +29,7 @@ Suppose we came up with an API like this:
     import json
     import urllib.request
 
-    class Package(object):
+    class Package:
 
         def __init__(self, name):
             url = f'http://pypi.python.org/pypi/{name}/json'
@@ -75,7 +75,7 @@ Save it as :file:`tests.py` and run it. What happens?
 As expected we get an :exc:`ImportError` because we haven't created our
 module yet. So that's the next step! First we just stub the class::
 
-    class Package(object):
+    class Package:
         pass
 
 This should fail because this constructor doesn't take any arguments. Let's
@@ -97,7 +97,7 @@ confirm this:
 
 Just as expected. OK - so we write a custom constructor::
 
-    class Package(object):
+    class Package:
         def __init__(self, name):
             pass
 
@@ -115,7 +115,7 @@ It's time to write some real code! Here's our working module::
     import json
     import urllib.request
 
-    class Package(object):
+    class Package:
 
         def __init__(self, name):
             url = f'http://pypi.python.org/pypi/{name}/json'

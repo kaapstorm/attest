@@ -291,7 +291,7 @@ def walk(node):
         yield node
 
 
-class NodeVisitor(object):
+class NodeVisitor:
     """Walks the abstract syntax tree and call visitor functions for every
     node found.  The visitor functions may return values which will be
     forwarded by the `visit` method.
