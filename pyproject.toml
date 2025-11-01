@@ -1,0 +1,78 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "attest"
+version = "0.6"
+description = "Modern, Pythonic unit testing."
+readme = "README.rst"
+license = "BSD-3-Clause"
+authors = [
+    { name = "Dag Odenhall", email = "dag.odenhall@gmail.com" }
+]
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "progressbar2>=3.0",  # progressbar is deprecated, use progressbar2
+    "pygments",
+    "six",
+]
+
+[project.urls]
+Homepage = "https://github.com/dag/attest"
+Repository = "https://github.com/dag/attest"
+
+[project.scripts]
+attest = "attest.run:main"
+
+[project.entry-points."attest.reporters"]
+xml = "attest:XmlReporter"
+xunit = "attest:XUnitReporter"
+quickfix = "attest:QuickFixReporter"
+plain = "attest:PlainReporter"
+fancy = "attest:FancyReporter"
+auto = "attest:auto_reporter"
+
+[project.entry-points."pygments.styles"]
+attest = "attest.pygments:Attest"
+
+[tool.hatch.build.targets.wheel]
+packages = ["attest"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "attest/",
+    "docs/",
+    "tests/",
+    "*.rst",
+    "*.py",
+    "LICENSE",
+    "MANIFEST.in",
+]
+
+# Development dependencies (optional)
+[project.optional-dependencies]
+dev = [
+    "pyflakes",
+    "sphinx",
+    "tox",
+]
+docs = [
+    "sphinx",
+]
+test = [
+    "tox",
+]
