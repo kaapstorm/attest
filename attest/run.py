@@ -95,7 +95,7 @@ def main(tests=None, **kwargs):
         names = [arg for arg in args if '=' not in arg]
         if not names:
             names = [name for name in os.listdir('.')
-                          if path.isfile('%s/__init__.py' % name)]
+                          if path.isfile(f'{name}/__init__.py')]
 
         if options.native_assert:
             tests = Tests(names)
@@ -114,7 +114,7 @@ def main(tests=None, **kwargs):
         filename = options.profile
         import cProfile
         cProfile.runctx('run()', globals(), locals(), filename)
-        print('Wrote profiling results to %r.' % (filename,))
+        print(f'Wrote profiling results to {filename!r}.')
     else:
         run()
 

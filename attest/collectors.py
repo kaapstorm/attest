@@ -262,10 +262,10 @@ class Tests(object):
             if not name:
                 name = "unnamed"
             if not name.startswith("test_"):
-                name = "test_%s" % (name, )
+                name = f"test_{name}"
             count = counts.increment(name)
             if count > 1:
-                name = "%s_%s" % (name, count)
+                name = f"{name}_{count}"
             methods[name] = staticmethod(func)
         return type("Tests", (TestCase, ), methods)
 

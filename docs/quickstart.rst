@@ -32,7 +32,7 @@ Suppose we came up with an API like this:
     class Package(object):
 
         def __init__(self, name):
-            url = 'http://pypi.python.org/pypi/%s/json' % name
+            url = f'http://pypi.python.org/pypi/{name}/json'
             data = urllib2.urlopen(url).read()
             vars(self).update(json.loads(data)['info'])
 
@@ -118,7 +118,7 @@ It's time to write some real code! Here's our working module::
     class Package(object):
 
         def __init__(self, name):
-            url = 'http://pypi.python.org/pypi/%s/json' % name
+            url = f'http://pypi.python.org/pypi/{name}/json'
             data = json.loads(urllib2.urlopen(url).read())
             self.author = data['info']['author']
             self.summary = data['info']['summary']

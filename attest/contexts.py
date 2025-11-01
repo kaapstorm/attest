@@ -68,7 +68,7 @@ def disable_imports(*names):
     import_ = builtins.__import__
     def __import__(name, *args, **kwargs):
         if name in names:
-            raise ImportError('%r is disabled' % name)
+            raise ImportError(f'{name!r} is disabled')
         return import_(name, *args, **kwargs)
     builtins.__import__ = __import__
     try:
@@ -98,7 +98,7 @@ class Error(object):
         return str(self.exc)
 
     def __repr__(self):
-        return u'<Error %s>' % repr(self.exc)
+        return f'<Error {self.exc!r}>'
 
 
 @contextmanager

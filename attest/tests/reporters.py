@@ -66,7 +66,7 @@ def xml_reporter():
         '  <pass name="attest.tests._meta.passing"/>',
         '  <fail name="attest.tests._meta.failing" type="TestFailure">',
         '    Traceback (most recent call last):',
-        '    %s' % EXCEPTION,
+        f'    {EXCEPTION}',
         '  </fail>',
         '</testreport>',
     ]):
@@ -90,7 +90,7 @@ def plain_reporter():
         '-> stdout',
         'E: stderr',
         'Traceback (most recent call last):',
-        '%s' % EXCEPTION,
+        f'{EXCEPTION}',
         '',
         'Failures: 1/2 (1 assertions)',
     ]):
@@ -105,7 +105,8 @@ def quickfix_reporter():
         with Assert.raises(SystemExit):
             _meta.suite.run(attest.QuickFixReporter)
 
-    assert out == ['%s:%d: TestFailure' % (SOURCEFILE, LINENO)]
+    expected = f'{SOURCEFILE}:{LINENO}: TestFailure'
+    assert out == [expected]
 
 
 @suite.test

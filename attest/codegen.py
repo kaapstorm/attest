@@ -58,7 +58,7 @@ class SourceGenerator(NodeVisitor):
     def newline(self, node=None, extra=0):
         self.new_lines = max(self.new_lines, 1 + extra)
         if node is not None and self.add_line_information:
-            self.write('# line: %s' % node.lineno)
+            self.write(f'# line: {node.lineno}')
             self.new_lines = 1
 
     def body(self, statements):
@@ -126,7 +126,7 @@ class SourceGenerator(NodeVisitor):
 
     def visit_ImportFrom(self, node):
         self.newline(node)
-        self.write('from %s%s import ' % ('.' * node.level, node.module))
+        self.write(f'from {"." * node.level}{node.module} import ')
         for idx, item in enumerate(node.names):
             if idx:
                 self.write(', ')
@@ -146,7 +146,7 @@ class SourceGenerator(NodeVisitor):
         self.newline(extra=1)
         self.decorators(node)
         self.newline(node)
-        self.write('def %s(' % node.name)
+        self.write(f'def {node.name}(')
         self.signature(node.args)
         self.write('):')
         self.body(node.body)
@@ -163,7 +163,7 @@ class SourceGenerator(NodeVisitor):
         self.newline(extra=2)
         self.decorators(node)
         self.newline(node)
-        self.write('class %s' % node.name)
+        self.write(f'class {node.name}')
         for base in node.bases:
             paren_or_comma()
             self.visit(base)
@@ -375,7 +375,7 @@ class SourceGenerator(NodeVisitor):
     def visit_BinOp(self, node):
         self.write('(')
         self.visit(node.left)
-        self.write(' %s ' % BINOP_SYMBOLS[type(node.op)])
+        self.write(f' {BINOP_SYMBOLS[type(node.op)]} ')
         self.visit(node.right)
         self.write(')')
 
@@ -383,7 +383,7 @@ class SourceGenerator(NodeVisitor):
         self.write('(')
         for idx, value in enumerate(node.values):
             if idx:
-                self.write(' %s ' % BOOLOP_SYMBOLS[type(node.op)])
+                self.write(f' {BOOLOP_SYMBOLS[type(node.op)]} ')
             self.visit(value)
         self.write(')')
 
@@ -391,7 +391,7 @@ class SourceGenerator(NodeVisitor):
         self.write('(')
         self.visit(node.left)
         for op, right in zip(node.ops, node.comparators):
-            self.write(' %s ' % CMPOP_SYMBOLS[type(op)])
+            self.write(f' {CMPOP_SYMBOLS[type(op)]} ')
             self.visit(right)
         self.write(')')
 

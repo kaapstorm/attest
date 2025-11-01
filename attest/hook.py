@@ -294,7 +294,7 @@ class AssertImportHook(object):
         try:
             return transformer.make_module(name, newpath)
         except Exception as err:
-            raise ImportError('cannot import %s: %s' % (name, err))
+            raise ImportError(f'cannot import {name}: {err}')
 
     def get_source(self, name):
         try:

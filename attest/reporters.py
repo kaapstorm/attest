@@ -136,7 +136,7 @@ class TestResult(object):
     def assertion(self):
         if isinstance(self.error, TestFailure):
             expressions = str(self.error.value)
-            return '\n'.join('assert %s' % expr
+            return '\n'.join(f'assert {expr}'
                              for expr in expressions.splitlines())
 
     @property
@@ -162,7 +162,7 @@ class TestResult(object):
                         try:
                             asserter(left, right)
                         except AssertionError as exc:
-                            return '%s\n' % exc.args[0]
+                            return f'{exc.args[0]}\n'
 
 
 def _test_loader_factory(reporter):
@@ -288,9 +288,10 @@ class PlainReporter(AbstractReporter):
             print()
             result.debug()
 
-        print('Failures: %s/%s (%s assertions)' % (len(self.failures),
-                                                   self.total,
-                                                   statistics.assertions))
+        print(
+            f'Failures: {len(self.failures)}/{self.total} '
+            f'({statistics.assertions} assertions)'
+        )
 
         if self.failures:
             raise SystemExit(1)
@@ -435,8 +436,11 @@ class FancyReporter(AbstractReporter):
             failed = colorize('red', str(len(self.failures)))
         else:
             failed = len(self.failures)
-        print('Failures: %s/%s (%s assertions, %.3f seconds)' % (
-            failed, self.counter, statistics.assertions, self.total_time))
+        print(
+            f'Failures: {failed}/{self.counter} '
+            f'({statistics.assertions} assertions, '
+            f'{self.total_time:.3f} seconds)'
+        )
 
         if self.failures:
             raise SystemExit(1)
@@ -480,23 +484,25 @@ class XmlReporter(AbstractReporter):
 
     def begin(self, tests):
         print('<?xml version="1.0" encoding="UTF-8"?>')
-        print('<testreport tests="%d">' % len(tests))
+        print(f'<testreport tests="{len(tests)}">')
 
     def success(self, result):
-        print('  <pass name="%s"/>' % result.test_name)
+        print(f'  <pass name="{result.test_name}"/>')
 
     def failure(self, result):
         if isinstance(result.error, AssertionError):
             tag = 'fail'
         else:
             tag = 'error'
-        print('  <%s name="%s" type="%s">' % (tag, result.test_name,
-                                              result.exc_info[0].__name__))
+        print(
+            f'  <{tag} name="{result.test_name}" '
+            f'type="{result.exc_info[0].__name__}">'
+        )
         print(self.escape('\n'.join(' ' * 4 + line
                                     for line in
                                     result.traceback.splitlines()),
                           quote=True))
-        print('  </%s>' % tag)
+        print(f'  </{tag}>')
 
     def finished(self):
         print('</testreport>')
@@ -528,8 +534,10 @@ class XUnitReporter(AbstractReporter):
         self.successes += 1
         self.total_time += result.time
         self.reports.append(
-            '<testcase classname="%s" name="%s" time="%f" />' % (
-                result.test_name, result.test.__name__, result.time))
+            f'<testcase classname="{result.test_name}" '
+            f'name="{result.test.__name__}" '
+            f'time="{result.time:f}" />'
+        )
         if self.file:
             print(result.test_name, "... ok")
 
@@ -542,34 +550,38 @@ class XUnitReporter(AbstractReporter):
             tag = 'error'
             self.errors += 1
 
-        error = '<testcase classname="%s" name="%s" time="%f">\n' % (
-            result.test_name, result.test.__name__, result.time)
+        error = (
+            f'<testcase classname="{result.test_name}" '
+            f'name="{result.test.__name__}" '
+            f'time="{result.time:f}">\n'
+        )
 
-        error += '<%s type="%s" message="%s"><![CDATA[\n' % (
-            tag,
-            result.exc_info[0].__name__,
-            self.escape(repr(result.exc_info[1]), quote=True))
+        error += (
+            f'<{tag} type="{result.exc_info[0].__name__}" '
+            f'message="{self.escape(repr(result.exc_info[1]), quote=True)}">'
+            f'<![CDATA[\n'
+        )
         error += self.escape(
             '\n'.join(line
                     for line in
                     result.traceback.splitlines()),
             quote=True)
-        error += '\n]]>\n</%s>\n</testcase>' % tag
+        error += f'\n]]>\n</{tag}>\n</testcase>'
         self.reports.append(error)
         if self.file:
             print(result.test_name, "... ", tag)
 
     def finished(self):
         out = '<?xml version="1.0" encoding="UTF-8"?>\n'
-        out += ('<testsuite name="attest" tests="%d" ' +
-                   'errors="%d" failures="%d" ' +
-                   'hostname="%s" timestamp="%s" time="%f">\n') % (
-                (self.errors + self.failures + self.successes),
-                self.errors,
-                self.failures,
-                self.hostname,
-                self.timestamp,
-                self.total_time)
+        out += (
+            f'<testsuite name="attest" '
+            f'tests="{self.errors + self.failures + self.successes}" '
+            f'errors="{self.errors}" '
+            f'failures="{self.failures}" '
+            f'hostname="{self.hostname}" '
+            f'timestamp="{self.timestamp}" '
+            f'time="{self.total_time:f}">\n'
+        )
         out += '<properties />\n'
         out += '\n'.join(self.reports)
         out += '\n</testsuite>\n'
@@ -618,7 +630,7 @@ class QuickFixReporter(AbstractReporter):
         type, msg = result.exc_info[0].__name__, str(result.exc_info[1])
         if msg:
             msg = ': ' + msg
-        print("%s:%s: %s%s" % (fn, lineno, type, msg))
+        print(f"{fn}:{lineno}: {type}{msg}")
 
     def finished(self):
         if self.failed:
