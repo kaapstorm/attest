@@ -2,7 +2,7 @@ import sys
 import os
 from os import path
 
-from pkg_resources import get_distribution
+from importlib.metadata import version
 from optparse import OptionParser, make_option
 from attest.collectors import Tests
 from attest.reporters import get_all_reporters, get_reporter_by_name
@@ -14,7 +14,7 @@ def make_parser(**kwargs):
     args = dict(
         prog='attest',
         usage='%prog [options] [tests...] [key=value...]',
-        version=get_distribution('Attest').version,
+        version=version('attest'),
 
         description=(
             'The positional "tests" are dotted '

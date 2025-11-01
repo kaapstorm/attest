@@ -26,7 +26,6 @@ classifiers = [
 dependencies = [
     "progressbar2>=3.0",
     "pygments",
-    "setuptools",  # For pkg_resources
 ]
 
 [project.urls]

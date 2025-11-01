@@ -7,9 +7,9 @@ import traceback
 import unittest
 import _ast
 
-from os            import path
-from pkg_resources import iter_entry_points
-from datetime      import datetime
+from os                  import path
+from importlib.metadata  import entry_points
+from datetime            import datetime
 try:
     from abc import ABCMeta, abstractmethod
 except ImportError:
@@ -663,14 +663,15 @@ def get_reporter_by_name(name, default='auto'):
         Reporters are registered via setuptools entry points.
 
     """
+    eps = entry_points(group='attest.reporters')
     reporter = None
     if name is not None:
-        reporter = list(iter_entry_points('attest.reporters', name))
+        reporter = list(eps.select(name=name))
     if not reporter:
-        reporter = list(iter_entry_points('attest.reporters', default))
+        reporter = list(eps.select(name=default))
     if not reporter:
         raise KeyError
-    return reporter[0].load(require=False)
+    return reporter[0].load()
 
 
 def get_all_reporters():
@@ -686,5 +687,5 @@ def get_all_reporters():
     .. versionadded:: 0.4
 
     """
-    for ep in iter_entry_points('attest.reporters'):
+    for ep in entry_points(group='attest.reporters'):
         yield ep.name
