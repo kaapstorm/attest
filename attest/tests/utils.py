@@ -150,7 +150,7 @@ def nesting_contexts():
         with ctx as args:
             assert signals == ['inner one', 'inner two']
             assert args == ['one', 'two']
-            1/0
+            1/0  # noqa: B018
     assert signals == ['inner one', 'inner two', 'outer two', 'outer one']
 
     args = None
@@ -167,7 +167,7 @@ def nesting_contexts():
     @contextmanager
     def two():
         signals.append('inner two')
-        1/0
+        1/0  # noqa: B018
         try:
             yield 'two'
         finally:

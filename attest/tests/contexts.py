@@ -61,7 +61,9 @@ def raises():
             pass
     except AssertionError as e:
         assert type(e) is AssertionError
-        assert str(e) == "didn't raise (RuntimeError, ValueError) when expected"
+        assert str(e) == (
+            "didn't raise (RuntimeError, ValueError) when expected"
+        )
     else:
         raise AssertionError
 

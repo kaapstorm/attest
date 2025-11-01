@@ -1,5 +1,3 @@
-# coding:utf-8
-
 import inspect
 import os
 import sys
@@ -519,7 +517,7 @@ class XUnitReporter(AbstractReporter):
         try:
             import socket
             self.hostname = socket.gethostname()
-        except:
+        except:  # noqa: E722 - Intentionally catch all exceptions for fallback
             self.hostname = 'unknown'
         self.timestamp = datetime.isoformat(datetime.today())
 

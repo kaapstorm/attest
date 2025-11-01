@@ -137,7 +137,7 @@ def raises(*exceptions):
         error.exc = e
     else:
         exceptions = exceptions[0] if len(exceptions) == 1 else exceptions
-        raise AssertionError("didn't raise %s when expected" % _repr(exceptions))
+        raise AssertionError(f"didn't raise {_repr(exceptions)} when expected")
 
 
 @contextmanager

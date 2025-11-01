@@ -210,8 +210,12 @@ class AssertTransformer(ast.NodeTransformer):
         return compile(to_source(self.node), self.filename, 'exec')
 
     def visit_Assert(self, node):
+        if node.msg is not None:
+            msg = node.msg
+        else:
+            msg = _build(ast.Constant, value='')
         args = [_build(ast.Constant, value=to_source(node.test)),
-                node.msg if node.msg is not None else _build(ast.Constant, value=''),
+                msg,
                 _build(ast.Call,
                     func=_build(ast.Name, id='globals', ctx=ast.Load()),
                     args=[], keywords=[]),
