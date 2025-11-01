@@ -73,3 +73,34 @@ docs = [
 test = [
     "tox",
 ]
+
+# Tox configuration
+[tool.tox]
+env_list = ["py311", "py312", "py313", "pypy3", "doctest"]
+
+[tool.tox.env_run_base]
+commands = [["attest", "attest.tests"]]
+
+[tool.tox.env.doctest]
+deps = ["sphinx"]
+change_dir = "docs"
+commands = [["sphinx-build", "-WEab", "{envname}", "-d", "{envtmpdir}/doctrees", ".", "{envtmpdir}/{envname}"]]
+
+[tool.tox.env.html]
+deps = ["sphinx"]
+change_dir = "docs"
+commands = [["sphinx-build", "-WEab", "{envname}", "-d", "{envtmpdir}/doctrees", ".", "{envtmpdir}/{envname}"]]
+
+[tool.tox.env.linkcheck]
+deps = ["sphinx"]
+change_dir = "docs"
+commands = [["sphinx-build", "-WEab", "{envname}", "-d", "{envtmpdir}/doctrees", ".", "{envtmpdir}/{envname}"]]
+
+[tool.tox.env.spelling]
+deps = [
+    "sphinx",
+    "sphinxcontrib-spelling>=1.0",
+    "pyenchant",
+]
+change_dir = "docs"
+commands = [["sphinx-build", "-Eab", "{envname}", "-d", "{envtmpdir}/doctrees", ".", "{envtmpdir}/{envname}"]]
