@@ -525,4 +525,5 @@ class SourceGenerator(NodeVisitor):
 
 if __name__ == '__main__':
     import sys
+    from attest.ast import parse
     print(to_source(parse(open(sys.argv[1]).read())))
