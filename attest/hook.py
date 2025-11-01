@@ -1,11 +1,12 @@
-import imp
+import importlib.machinery
+import importlib.util
 import inspect
 import os
 import sys
+import types
 
-from attest         import ast, statistics
-from attest.codegen import to_source, SourceGenerator
-
+from attest import ast, statistics
+from attest.codegen import SourceGenerator, to_source
 
 __all__ = ['COMPILES_AST',
            'ExpressionEvaluator',
@@ -186,7 +187,7 @@ class AssertTransformer(ast.NodeTransformer):
         :returns: The module object.
 
         """
-        module = imp.new_module(name)
+        module = types.ModuleType(name)
         module.__file__ = self.filename
         if newpath:
             module.__path__ = newpath
@@ -229,13 +230,13 @@ class AssertTransformer(ast.NodeTransformer):
                    args=args, keywords=[])), node)
 
 
-class AssertImportHookEnabledDescriptor(object):
+class AssertImportHookEnabledDescriptor:
 
     def __get__(self, instance, owner):
         return any(isinstance(ih, owner) for ih in sys.meta_path)
 
 
-class AssertImportHook(object):
+class AssertImportHook:
     """An :term:`importer` that transforms imported modules with
     :class:`AssertTransformer`.
 
@@ -268,53 +269,81 @@ class AssertImportHook(object):
         sys.meta_path.remove(self)
 
     def find_module(self, name, path=None):
-        lastname = name.rsplit('.', 1)[-1]
         try:
-            self._cache[name] = imp.find_module(lastname, path), path
-        except ImportError:
-            return
+            # Use PathFinder directly to avoid triggering meta_path hooks again
+            spec = importlib.machinery.PathFinder.find_spec(name, path)
+            if spec is None:
+                return None
+            self._cache[name] = spec
+        except (ImportError, ModuleNotFoundError, ValueError):
+            return None
         return self
 
     def load_module(self, name):
         if name in sys.modules:
             return sys.modules[name]
 
+        spec = self._cache.get(name)
+        if spec is None:
+            raise ImportError(f'cannot find module {name}')
+
         source, filename, newpath = self.get_source(name)
-        (fd, fn, info), path = self._cache[name]
 
         if source is None:
-            return imp.load_module(name, fd, fn, info)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[name] = module
+            spec.loader.exec_module(module)
+            return module
 
         transformer = AssertTransformer(source, filename)
 
         if not transformer.should_rewrite:
-            fd, fn, info = imp.find_module(name.rsplit('.', 1)[-1], path)
-            return imp.load_module(name, fd, fn, info)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[name] = module
+            spec.loader.exec_module(module)
+            return module
 
         try:
             return transformer.make_module(name, newpath)
         except Exception as err:
-            raise ImportError(f'cannot import {name}: {err}')
+            raise ImportError(f'cannot import {name}: {err}') from err
 
     def get_source(self, name):
-        try:
-            (fd, fn, info), path = self._cache[name]
-        except KeyError:
+        spec = self._cache.get(name)
+        if spec is None:
             raise ImportError(name)
 
         code = filename = newpath = None
-        if info[2] == imp.PY_SOURCE:
-            filename = fn
-            with fd:
-                code = fd.read()
-        elif info[2] == imp.PY_COMPILED:
-            filename = fn[:-1]
-            with open(filename, 'r') as f:
-                code = f.read()
-        elif info[2] == imp.PKG_DIRECTORY:
-            filename = os.path.join(fn, '__init__.py')
-            newpath = [fn]
-            with open(filename, 'r') as f:
-                code = f.read()
+
+        if spec.submodule_search_locations is not None:
+            # It's a package
+            origin = spec.origin or spec.submodule_search_locations[0]
+            filename = os.path.join(origin, '__init__.py')
+            if spec.origin:
+                filename = spec.origin
+            newpath = spec.submodule_search_locations
+            try:
+                with open(filename) as f:
+                    code = f.read()
+            except (OSError, TypeError):  # Missing or invalid file paths
+                pass
+        elif isinstance(spec.loader, importlib.machinery.SourceFileLoader):
+            # It's a regular Python source file
+            filename = spec.origin
+            if filename:
+                try:
+                    with open(filename) as f:
+                        code = f.read()
+                except OSError:  # Missing or unreadable files
+                    pass
+        elif isinstance(spec.loader, importlib.machinery.SourcelessFileLoader):
+            # It's a compiled Python file (.pyc)
+            if spec.origin and spec.origin.endswith('.pyc'):
+                filename = spec.origin[:-1]  # Remove 'c' from '.pyc'
+                try:
+                    with open(filename) as f:
+                        code = f.read()
+                except OSError:  # Missing source file
+                    pass
 
         return code, filename, newpath
