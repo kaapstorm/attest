@@ -90,10 +90,8 @@ def literal_eval(node_or_string):
     if isinstance(node_or_string, Expression):
         node_or_string = node_or_string.body
     def _convert(node):
-        if isinstance(node, Str):
-            return node.s
-        elif isinstance(node, Num):
-            return node.n
+        if isinstance(node, Constant):
+            return node.value
         elif isinstance(node, Tuple):
             return tuple(map(_convert, node.elts))
         elif isinstance(node, List):
@@ -230,9 +228,13 @@ def get_docstring(node, trim=True):
     """
     if not isinstance(node, (FunctionDef, ClassDef, Module)):
         raise TypeError(f"{node.__class__.__name__!r} can't have docstrings")
-    if node.body and isinstance(node.body[0], Expr) and \
-       isinstance(node.body[0].value, Str):
-        doc = node.body[0].value.s
+    if (
+        node.body
+        and isinstance(node.body[0], Expr)
+        and isinstance(node.body[0].value, Constant)
+        and isinstance(node.body[0].value.value, str)
+    ):
+        doc = node.body[0].value.value
         if trim:
             doc = trim_docstring(doc)
         return doc
@@ -243,8 +245,8 @@ def trim_docstring(docstring):
     lines = docstring.expandtabs().splitlines()
 
     # Find minimum indentation of any non-blank lines after first line.
-    from sys import maxint
-    margin = maxint
+    from sys import maxsize
+    margin = maxsize
     for line in lines[1:]:
         content = len(line.lstrip())
         if content:
@@ -254,7 +256,7 @@ def trim_docstring(docstring):
     # Remove indentation.
     if lines:
         lines[0] = lines[0].lstrip()
-    if margin < maxint:
+    if margin < maxsize:
         for i in range(1, len(lines)):
             lines[i] = lines[i][margin:]
 
